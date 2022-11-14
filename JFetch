@@ -37,7 +37,7 @@ class JFetch {
     """;
 
     static String fetchTemplate = ""
-    + ANSI_BOLD + ANSI_YELLOW + "%username%" + ANSI_RESET + "@" + ANSI_BOLD + ANSI_YELLOW + "%hostname%\n" + ANSI_RESET
+    + ANSI_BOLD + ANSI_YELLOW + "%username%" + ANSI_RESET + "@" + ANSI_BOLD + ANSI_YELLOW + "%hostname%" + ANSI_RESET + "\n" 
     + "%dynamicHeaderRow%\n"
     + ANSI_BOLD + ANSI_YELLOW + "Version" + ANSI_RESET + ": %javaVersion%\n"
     + ANSI_BOLD + ANSI_YELLOW + "Vendor" + ANSI_RESET + ": %javaVendor% (%javaVendorURL%)\n"
@@ -54,7 +54,7 @@ class JFetch {
         for(int i = 0; i < Math.max(asciiArtLines.length, fetchedDataLines.length); i++) {
             String asciiArtLine =  i < asciiArtLines.length ? asciiArtLines[i] : "";
             String fetchedDataLine = i < fetchedDataLines.length ? fetchedDataLines[i] : "";
-            System.out.println(ANSI_YELLOW + asciiArtLine + ANSI_RESET + "   " + fetchedDataLine);
+            System.out.println(ANSI_BOLD + ANSI_YELLOW + asciiArtLine + ANSI_RESET + "   " + fetchedDataLine);
         }
     }
 
