@@ -1,0 +1,155 @@
+#!/usr/lib/jvm/default/bin/java --source 15
+
+import java.util.ArrayList;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+class JFetch {
+
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
+    public static final String ANSI_BOLD = "\033[0;1m";
+
+    static String asciiArt = """                                                         
+        ██    ██    ██                                    
+        ██      ██  ██                                    
+        ██    ██    ██                                      
+          ██  ██      ██                                    
+          ██    ██    ██                                    
+                                                            
+      ████████████████████                                  
+      ██                ██████                              
+      ██                ██  ██                              
+      ██                ██  ██                              
+      ██                ██████                              
+        ██            ██                                    
+    ████████████████████████                                
+    ██                    ██                                
+      ████████████████████  
+    """;
+
+    static String fetchTemplate = ""
+    + ANSI_BOLD + ANSI_YELLOW + "%username%" + ANSI_RESET + "@" + ANSI_BOLD + ANSI_YELLOW + "%hostname%\n" + ANSI_RESET
+    + "%dynamicHeaderRow%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "Version" + ANSI_RESET + ": %javaVersion%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "Vendor" + ANSI_RESET + ": %javaVendor% (%javaVendorURL%)\n"
+    + ANSI_BOLD + ANSI_YELLOW + "Home" + ANSI_RESET + ": %javaHome%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "OS" + ANSI_RESET + ": %osName%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "OS Arch" + ANSI_RESET + ": %osArch%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "OS Version" + ANSI_RESET + ": %osVersion%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "OS Line Separator" + ANSI_RESET + ": %osLineSeparator%\n"
+    + ANSI_BOLD + ANSI_YELLOW + "OS Path Separator" + ANSI_RESET + ": %osPathSeparator%\n";
+
+    public static void main(String args[]) {
+        String[] asciiArtLines = equalizeStringArrLength(splitLines(asciiArt));
+        String[] fetchedDataLines = splitLines(replaceTemplateValues(fetchTemplate));
+        for(int i = 0; i < Math.max(asciiArtLines.length, fetchedDataLines.length); i++) {
+            String asciiArtLine =  i < asciiArtLines.length ? asciiArtLines[i] : "";
+            String fetchedDataLine = i < fetchedDataLines.length ? fetchedDataLines[i] : "";
+            System.out.println(ANSI_YELLOW + asciiArtLine + ANSI_RESET + "   " + fetchedDataLine);
+        }
+    }
+
+    private static String escape(String s){
+        return s.replace("\\", "\\\\")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\f", "\\f")
+                .replace("\'", "\\'")
+                .replace("\"", "\\\"");
+    }
+
+    private static int getStringLengthWithoutANSI(String str) {
+        return str.replaceAll("(\\x9B|\\x1B\\[)[0-?]*[ -\\/]*[@-~]", "").length();
+    }
+    
+
+    private static String[] splitLines(String input) {
+        char[] inputChars = input.toCharArray();
+        ArrayList<String> lines = new ArrayList<String>();
+        String temp = "";
+        for(char c: inputChars) {
+            if(c == '\n') {
+                lines.add(temp);
+                temp = "";
+                continue;
+            }
+            temp += c;
+        }
+
+        if(temp != "") lines.add(temp);
+
+        String[] linesArr = new String[lines.size()];
+        linesArr = lines.toArray(linesArr);
+
+        return linesArr;
+    }
+
+    private static int maxStringLength(String[] input) {
+        int max = 0;
+        for(String str: input) {
+            int length = str.length();
+            if(length > max) max = length;
+        }
+        return max;
+    }
+
+    private static String[] equalizeStringArrLength(String[] input) {
+        int maxLength = maxStringLength(input);
+        String[] output = new String[input.length];
+        for(int i = 0; i < input.length; i++) {
+            String str = input[i];
+            String equStr = str + " ".repeat(maxLength -str.length());
+            output[i] = equStr;
+        }
+        return output;
+    }
+
+    private static String replaceTemplateValues(String template) {
+        String username = System.getProperty("user.name");
+        String hostname = "";
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e){
+            hostname = "unknown";
+        };
+        String javaVersion = System.getProperty("java.version");
+        String javaVendor = System.getProperty("java.vendor");
+        String javaVendorURL = System.getProperty("java.vendor.url");
+        String javaHome = System.getProperty("java.home");
+        String osName = System.getProperty("os.name");
+        String osArch = System.getProperty("os.arch");
+        String osVersion = System.getProperty("os.version");
+        String osLineSeparator = escape(System.getProperty("line.separator"));
+        String osPathSeparator = escape(System.getProperty("path.separator"));
+
+        template = template .replace("%username%", username)
+                            .replace("%hostname%", hostname)
+                            .replace("%javaVersion%", javaVersion)
+                            .replace("%javaVendor%", javaVendor)
+                            .replace("%javaVendorURL%", javaVendorURL)
+                            .replace("%javaHome%", javaHome)
+                            .replace("%osName%", osName)
+                            .replace("%osArch%", osArch)
+                            .replace("%osVersion%", osVersion)
+                            .replace("%osLineSeparator%", osLineSeparator)
+                            .replace("%osPathSeparator%", osPathSeparator);
+
+        int firstLineLength = getStringLengthWithoutANSI(splitLines(template)[0]);
+
+        template = template.replace("%dynamicHeaderRow%", "-".repeat(firstLineLength));
+
+        return template;
+    }
+
+}
